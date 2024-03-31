@@ -19,3 +19,6 @@
 
 # Go workspace file
 go.work
+
+# book files
+waiig_code_1.7
