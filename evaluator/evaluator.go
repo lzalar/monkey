@@ -35,13 +35,18 @@ func Eval(node ast.Node) object.Object {
 }
 
 func evalInfixExpression(left object.Object, right object.Object, operator string) object.Object {
-	if left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ {
+	switch {
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		leftValue := left.(*object.Integer)
 		rightValue := right.(*object.Integer)
 		return evalIntegerInfixExpression(leftValue, rightValue, operator)
+	case operator == token.EQ:
+		return nativeBoolToBooleanObject(left == right)
+	case operator == token.NOT_EQ:
+		return nativeBoolToBooleanObject(left != right)
+	default:
+		return NULL
 	}
-
-	return NULL
 }
 
 func evalIntegerInfixExpression(left *object.Integer, right *object.Integer, operator string) object.Object {
@@ -54,6 +59,14 @@ func evalIntegerInfixExpression(left *object.Integer, right *object.Integer, ope
 		return &object.Integer{Value: left.Value * right.Value}
 	case token.SLASH:
 		return &object.Integer{Value: left.Value / right.Value}
+	case token.EQ:
+		return nativeBoolToBooleanObject(left.Value == right.Value)
+	case token.NOT_EQ:
+		return nativeBoolToBooleanObject(left.Value != right.Value)
+	case token.LT:
+		return nativeBoolToBooleanObject(left.Value < right.Value)
+	case token.GT:
+		return nativeBoolToBooleanObject(left.Value > right.Value)
 	default:
 		return NULL
 	}
