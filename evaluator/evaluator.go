@@ -84,7 +84,7 @@ func evalInfixExpression(left object.Object, right object.Object, operator strin
 	switch {
 	case left.Type() != right.Type():
 		return newError("type mismatch: %s + %s", left.Type(), right.Type())
-	case left.Type() != object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
+	case left.Type() == object.INTEGER_OBJ && right.Type() == object.INTEGER_OBJ:
 		leftValue := left.(*object.Integer)
 		rightValue := right.(*object.Integer)
 		return evalIntegerInfixExpression(leftValue, rightValue, operator)
