@@ -117,6 +117,7 @@ func (l *Lexer) NextToken() token.Token {
 		stringValue, ok := l.readString()
 		if !ok {
 			tok = newToken(token.ILLEGAL, l.ch)
+			return tok
 		}
 		tok.Literal = stringValue
 		tok.Type = token.STRING
