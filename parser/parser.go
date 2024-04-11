@@ -372,8 +372,6 @@ func (p *Parser) parseFunction() ast.Expression {
 
 	function.Body = p.parseBlockStatement()
 
-	p.nextToken()
-
 	return function
 }
 
