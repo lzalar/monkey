@@ -49,8 +49,7 @@ func (l *Lexer) readString() (string, bool) {
 		return "", false
 	}
 
-	l.readChar()
-	return l.input[startPosition : l.position-1], true
+	return l.input[startPosition:l.position], true
 }
 
 func (l *Lexer) readIdentifier() string {
