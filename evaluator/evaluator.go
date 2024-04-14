@@ -13,6 +13,26 @@ var (
 	NULL  = &object.Null{}
 )
 
+var builtins = map[string]*object.Builtin{
+	"len": {
+		Fn: func(args ...object.Object) object.Object {
+			if len(args) != 1 {
+				return newError("wrong number of arguments. got=%d, want=1", len(args))
+			}
+
+			switch arg := args[0].(type) {
+			case *object.String:
+				return &object.Integer{
+					Value: int64(len(arg.Value)),
+				}
+			default:
+				return newError("argument to `len` not supported, got %s", arg.Type())
+
+			}
+		},
+	},
+}
+
 func Eval(node ast.Node, env *object.Environment) object.Object {
 	switch node := node.(type) {
 	case *ast.Program:
@@ -59,6 +79,14 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		env.Set(node.Name.Value, val)
 	case *ast.Identifier:
 		val, ok := env.Get(node.Value)
+		if ok {
+			return val
+		}
+
+		if builtin, ok := builtins[node.Value]; ok {
+			return builtin
+		}
+
 		if !ok {
 			return newError("identifier not found: %s", node.Value)
 		}
@@ -88,15 +116,16 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 }
 
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-
-	function, ok := fn.(*object.Function)
-	if !ok {
+	switch fn := fn.(type) {
+	case *object.Function:
+		extendedEnv := extendFunctionEnvironment(fn, args)
+		result := Eval(fn.Body, extendedEnv)
+		return unwrapReturnValue(result)
+	case *object.Builtin:
+		return fn.Fn(args...)
+	default:
 		return newError("not a function: %s", fn.Type())
 	}
-
-	extendedEnv := extendFunctionEnvironment(function, args)
-	result := Eval(function.Body, extendedEnv)
-	return unwrapReturnValue(result)
 }
 
 func unwrapReturnValue(obj object.Object) object.Object {
