@@ -12,6 +12,7 @@ type ObjectType string
 const (
 	INTEGER_OBJ      = "INTEGER"
 	BOOLEAN_OBJ      = "BOOLEAN"
+	ARRAY_OBJ        = "BOOLEAN"
 	NULL_OBJ         = "NULL"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
 	ERROR_OBJ        = "ERROR_OBJ"
@@ -23,6 +24,29 @@ const (
 type Object interface {
 	Type() ObjectType
 	Inspect() string
+}
+
+type Array struct {
+	Elements []Object
+}
+
+func (ar *Array) Type() ObjectType {
+	return ARRAY_OBJ
+}
+
+func (ar *Array) Inspect() string {
+	var out = bytes.Buffer{}
+	elems := []string{}
+
+	for _, element := range ar.Elements {
+		elems = append(elems, element.Inspect())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elems, ", "))
+	out.WriteString("]")
+
+	return out.String()
 }
 
 type Integer struct {
