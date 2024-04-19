@@ -423,45 +423,17 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	callExp := &ast.CallExpression{Token: p.curToken, Function: function}
 
-	callExp.Arguments = p.parseCallArguments()
+	callExp.Arguments = p.parseExpessionList(token.RPAREN)
 
 	return callExp
 }
 
-func (p *Parser) parseCallArguments() []ast.Expression {
-	args := []ast.Expression{}
-
-	if p.peekTokenIs(token.RPAREN) {
-		p.nextToken()
-		return args
-	}
-
-	p.nextToken()
-
-	args = append(args, p.parseExpression(LOWEST))
-
-	for p.peekTokenIs(token.COMMA) {
-		p.nextToken()
-		p.nextToken()
-		args = append(args, p.parseExpression(LOWEST))
-	}
-
-	if !p.expectPeek(token.RPAREN) {
-		return nil
-	}
-
-	return args
-}
-
-func (p *Parser) parseArrayLiteral() ast.Expression {
+func (p *Parser) parseExpessionList(endToken token.TokenType) []ast.Expression {
 	elems := []ast.Expression{}
 
-	if p.peekTokenIs(token.RBRACKET) {
+	if p.peekTokenIs(endToken) {
 		p.nextToken()
-		return &ast.ArrayLiteral{
-			Token:    p.curToken,
-			Elements: elems,
-		}
+		return elems
 	}
 
 	p.nextToken()
@@ -474,9 +446,15 @@ func (p *Parser) parseArrayLiteral() ast.Expression {
 		elems = append(elems, p.parseExpression(LOWEST))
 	}
 
-	if !p.expectPeek(token.RBRACKET) {
+	if !p.expectPeek(endToken) {
 		return nil
 	}
+
+	return elems
+}
+
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	elems := p.parseExpessionList(token.RBRACKET)
 
 	return &ast.ArrayLiteral{
 		Token:    p.curToken,
